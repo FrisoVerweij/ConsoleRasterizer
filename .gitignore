@@ -1,0 +1,7 @@
+# Folders
+x64/
+.vs/
+
+# File types
+*.exe
+*.ini
