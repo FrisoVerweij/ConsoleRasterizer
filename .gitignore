@@ -5,3 +5,6 @@ x64/
 # File types
 *.exe
 *.ini
+
+*.vcxproj.filters
+*.vcxproj.user
