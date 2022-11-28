@@ -3,8 +3,8 @@
 #include <vector>
 #include <tuple>
 #include <string>
-#include <cassert>
 #include <random>
+#include "utils.h"
 
 template <typename T>
 class Matrix
@@ -17,7 +17,9 @@ protected:
 private:
 	Matrix<T> pointwise(Matrix<T>& otherMatrix, T(*func)(T, T))
 	{
-		assert(m_Width == otherMatrix.width() && m_Height == otherMatrix.height());
+		assert(m_Width == otherMatrix.width() && m_Height == otherMatrix.height(), 
+			std::string("Shape of matrix A (") + std::to_string(m_Height) + ", " + std::to_string(m_Width) 
+			+ ") does not equal shape of matrix B (" + std::to_string(otherMatrix.height()) + ", " + std::to_string(otherMatrix.width()) + ").");
 
 		std::vector<T> newMatrix;
 		newMatrix.reserve(m_Width * m_Height);
@@ -79,7 +81,8 @@ public:
 
 	Matrix matmul(Matrix& otherMatrix)
 	{
-		assert(m_Width == otherMatrix.height());
+		assert(m_Width == otherMatrix.height(), 
+			std::string("Width of matrix A '") + std::to_string(m_Width) + "' does not equal height of matrix B '" + std::to_string(otherMatrix.height()) + "'.");
 
 		// Initialise new matrix data
 		std::vector<T> newMatrix;
