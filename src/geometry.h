@@ -4,6 +4,7 @@
 #include <tuple>
 #include <string>
 #include <random>
+#include <functional>
 #include "utils.h"
 
 template <typename T>
@@ -31,8 +32,59 @@ private:
 				newMatrix.push_back(func((*this)(i, j), otherMatrix(i, j)));
 			}
 		}
+		return Matrix<T>(newMatrix, m_Height, m_Width);
+	}
+
+	Matrix<T> pointwiseScalar(std::function<T(T)> func)
+	{
+		std::vector<T> newMatrix;
+		newMatrix.reserve(m_Height * m_Width);
+		for (T value : m_Values)
+			newMatrix.push_back(func(value));
 
 		return Matrix<T>(newMatrix, m_Height, m_Width);
+	}
+
+	Matrix<T> getMinor(int y, int x)
+	{
+		assert(m_Width > 1 && m_Height > 1, std::string("Cannot calculate minor of matrix with size (") + std::to_string(m_Height) + ", " + std::to_string(m_Width) + ").");
+
+		int newWidth = m_Width - 1;
+		int newHeight = m_Height - 1;
+
+		std::vector<T> newMinor;
+		newMinor.reserve(newHeight * newWidth);
+
+		for (int i = 0; i < m_Height; i++)
+		{
+			for (int j = 0; j < m_Width; j++)
+			{
+				if (i != y && j != x)
+					newMinor.push_back((*this)(i, j));
+			}
+		}
+		return Matrix<T>(newMinor, newHeight, newWidth);
+	}
+
+	Matrix<T> getCofactorMatrix()
+	{
+		assert(m_Height == m_Width, "Cannot calculate cofactor matrix of non-square matrix.");
+
+		std::vector<T> newCofactorMatrix;
+		newCofactorMatrix.reserve(m_Height * m_Height);
+
+		for (int i = 0; i < m_Height; i++)
+		{
+			for (int j = 0; j < m_Width; j++)
+				newCofactorMatrix.push_back(pow(-1, i+j) * getMinor(i, j).determinant());
+		}
+
+		return Matrix<T>(newCofactorMatrix, m_Height, m_Width);
+	}
+
+	Matrix<T> getAdjunct()
+	{
+		return getCofactorMatrix().transpose();
 	}
 
 public:
@@ -64,9 +116,19 @@ public:
 		return pointwise(otherMatrix, [](T a, T b) { return a + b; });
 	}
 
+	Matrix<T> operator + (T value)
+	{
+		return pointwiseScalar([&](T a) { return a + value; });
+	}
+
 	Matrix<T> operator - (Matrix<T>& otherMatrix)
 	{
 		return pointwise(otherMatrix, [](T a, T b) { return a - b; });
+	}
+
+	Matrix<T> operator - (T value)
+	{
+		return pointwiseScalar([&](T a) { return a - value; });
 	}
 
 	Matrix<T> operator * (Matrix<T>& otherMatrix)
@@ -74,9 +136,19 @@ public:
 		return pointwise(otherMatrix, [](T a, T b) { return a * b; });
 	}
 
+	Matrix<T> operator * (T value)
+	{
+		return pointwiseScalar([&](T a) { return a * value; });
+	}
+
 	Matrix<T> operator / (Matrix<T>& otherMatrix)
 	{
 		return pointwise(otherMatrix, [](T a, T b) { return a / b; });
+	}
+
+	Matrix<T> operator / (T value)
+	{
+		return pointwiseScalar([&](T a) { return a / value; });
 	}
 
 	Matrix matmul(Matrix& otherMatrix)
@@ -102,6 +174,38 @@ public:
 		}
 
 		return Matrix<T>(newMatrix, m_Height, otherMatrix.width());
+	}
+
+	T determinant()
+	{
+		assert(m_Height == m_Width, "Cannot calculate determinant of non-square matrix.");
+
+		// Base case
+		if (m_Height == 1)
+		{
+			return m_Values[0];
+		}
+
+		T output = 0;
+		for (int column = 0; column < m_Width; column++)
+		{
+			Matrix<T> currentMinor = getMinor(0, column);
+			output += pow(-1, column) * m_Values[column] * currentMinor.determinant();
+		}
+		return output;
+	}
+
+	Matrix<T> inverse()
+	{
+		T det = determinant();
+		if (det == 0)
+		{
+			std::cout << "Cannot inverse non-singular matrix. Returning self." << std::endl;
+			return *this;
+		}
+
+		Matrix<T> adj = getAdjunct();
+		return adj / det;
 	}
 
 	Matrix transpose()
