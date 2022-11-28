@@ -7,6 +7,9 @@
 #include <functional>
 #include "utils.h"
 
+template<typename T>
+class Vector;
+
 template <typename T>
 class Matrix
 {
@@ -151,16 +154,13 @@ public:
 		return pointwiseScalar([&](T a) { return a / value; });
 	}
 
-	Matrix matmul(Matrix& otherMatrix)
+	Matrix<T> matmul(Matrix<T>& otherMatrix)
 	{
 		assert(m_Width == otherMatrix.height(), 
 			std::string("Width of matrix A '") + std::to_string(m_Width) + "' does not equal height of matrix B '" + std::to_string(otherMatrix.height()) + "'.");
 
 		// Initialise new matrix data
-		std::vector<T> newMatrix;
-		newMatrix.reserve(m_Height * otherMatrix.width());
-		for (int i = 0; i < newMatrix.capacity(); i++)
-			newMatrix.push_back(0);
+		std::vector<T> newMatrix(m_Height * otherMatrix.width(), 0);
 
 		for (int i = 0; i < m_Height; i++)
 		{
@@ -174,6 +174,23 @@ public:
 		}
 
 		return Matrix<T>(newMatrix, m_Height, otherMatrix.width());
+	}
+	
+	Vector<T> matmul(Vector<T>& otherVector)
+	{
+		assert(m_Width == otherVector.height(),
+			std::string("Width of matrix A '") + std::to_string(m_Width) + "' does not equal height of vector B '" + std::to_string(otherVector.height()) + "'.");
+
+		std::vector<T> newVector(m_Height, 0);
+
+		for (int i = 0; i < m_Height; i++)
+		{
+			for (int k = 0; k < m_Width; k++)
+			{
+				newVector[i] += (*this)(i, k) * otherVector(k);
+			}
+		}
+		return Vector<T>(newVector);
 	}
 
 	T determinant()
@@ -238,6 +255,7 @@ public:
 				std::string s = std::to_string(m_Values[x + y * m_Width]);
 				int spacing = x < m_Width - 1 ? largestNumDigits - (int)s.length() + 1 : 1;
 				s.append(spacing, ' ');
+				s = s[0] != '-' ? std::string(" ") + s : s + " ";
 				std::cout << s;
 			}
 			std::cout << "\n";
@@ -264,28 +282,101 @@ public:
 template <typename T>
 class Vector : public Matrix<T>
 {
+private:
+	Vector<T> pointwise(Vector<T>& otherVector, T(*func)(T, T))
+	{
+		assert(Matrix<T>::m_Height == otherVector.height(),
+			std::string("Height of vector A '") + std::to_string(Matrix<T>::m_Height) + "' does not equal height of vector B (" + std::to_string(otherVector.height()) + "'.");
+
+		std::vector<T> newVector;
+		newVector.reserve(Matrix<T>::m_Height);
+
+		for (int i = 0; i < Matrix<T>::m_Height; i++)
+			newVector.push_back(func((*this)(i), otherVector(i)));
+
+		std::cout << Matrix<T>::m_Height << std::endl;
+
+		return Vector<T>(newVector);
+	}
+
+	Vector<T> pointwiseScalar(std::function<T(T)> func)
+	{
+		std::vector<T> newVector;
+		newVector.reserve(Matrix<T>::m_Height);
+
+		for (T value : Matrix<T>::m_Values)
+			newVector.push_back(func(value));
+
+		return Vector<T>(newVector);
+	}
+
 public:
 	Vector(std::initializer_list<T> inputValues)
 		: Matrix<T>(inputValues, inputValues.size(), 1)
-	{
-		std::cout << "Created Vector" << std::endl;
-	}
+	{}
 
-	T operator () (int x)
+	Vector(std::vector<T> inputValues)
+		: Matrix<T>(inputValues, inputValues.size(), 1)
+	{}
+
+	T& operator () (int x)
 	{
 		return Matrix<T>::m_Values[x];
+	}
+
+	Vector<T> operator + (Vector<T>& otherVector)
+	{
+		return pointwise(otherVector, [](T a, T b) { return a + b; });
+	}
+
+	Vector<T> operator + (T value)
+	{
+		return pointwiseScalar([&](T a) { return a + value; });
+	}
+
+	Vector<T> operator - (Vector<T>& otherVector)
+	{
+		return pointwise(otherVector, [](T a, T b) { return a - b; });
+	}
+
+	Vector<T> operator - (T value)
+	{
+		return pointwiseScalar([&](T a) { return a - value; });
+	}
+
+	Vector<T> operator * (Vector<T>& otherVector)
+	{
+		return pointwise(otherVector, [](T a, T b) { return a * b; });
+	}
+
+	Vector<T> operator * (T value)
+	{
+		return pointwiseScalar([&](T a) { return a * value; });
+	}
+
+	Vector<T> operator / (Vector<T>& otherVector)
+	{
+		return pointwise(otherVector, [](T a, T b) { return a / b; });
+	}
+
+	Vector<T> operator / (T value)
+	{
+		return pointwiseScalar([&](T a) { return a / value; });
 	}
 };
 
 template <typename T>
 Matrix<T> createEmptyMatrix(int height, int width)
 {
-	std::vector<T> values;
-	values.reserve(height * width);
-	for (int i = 0; i < values.capacity(); i++)
-		values.push_back(0);
-
+	std::vector<T> values(height * width, 0);
 	return Matrix<T>(values, height, width);
+}
+
+template <typename T>
+Vector<T> createEmptyVector(int height)
+{
+	std::vector<T> values(height, 0);
+	return Vector<T>(values);
 }
 
 template <typename T>
@@ -311,6 +402,18 @@ Matrix<T> createRandomMatrix(int height, int width)
 			newMatrix(i, j) = randomGenerator(rd);
 		}
 	}
-
 	return newMatrix;
+}
+
+template <typename T>
+Vector<T> createRandomVector(int height)
+{
+	std::random_device rd;
+	std::normal_distribution<T> randomGenerator(0, 1);
+	Vector<T> newVector = createEmptyVector<T>(height);
+	for (int i = 0; i < height; i++)
+	{
+		newVector(i) = randomGenerator(rd);
+	}
+	return newVector;
 }
