@@ -91,6 +91,8 @@ private:
 	}
 
 public:
+	Matrix() {}
+
 	Matrix(std::initializer_list<std::initializer_list<T>> inputValues)
 		: m_Height((int)inputValues.size()), m_Width((int)(*inputValues.begin()).size())
 	{
@@ -311,6 +313,8 @@ private:
 	}
 
 public:
+	Vector() {}
+
 	Vector(std::initializer_list<T> inputValues)
 		: Matrix<T>(inputValues, inputValues.size(), 1)
 	{}
