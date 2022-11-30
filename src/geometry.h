@@ -1,23 +1,80 @@
 #pragma once
+#include <vector>
 #include <string>
 #include "linalg.h"
 
-
-class Model
+class Vertex
 {
 private:
-
-	template <typename T>
-	std::vector<T> splitObjEntry(std::string entry, std::string delimiter, int numElements);
-	void readOBJ(std::string path);
+	Vector<float>* positionPtr;
+	Vector<float>* texCoordsPtr;
+	Vector<float>* normalPtr;
 
 public:
-	std::vector<Vector<float>>* vertices;
-	std::vector<Vector<float>>* vertexNormals;
-	std::vector<Vector<float>>* textureCoordinates;
-	std::vector<Vector<int>>* triangles;
+	Vertex(Vector<float>* positionPtr, Vector<float>* textureCoordinatePtr, Vector<float>* normalPtr);
 
-	Model(std::string path);
-	~Model();
+	Vector<float>& position();
+	Vector<float>& texCoords();
+	Vector<float>& normal();
 };
 
+class Triangle
+{
+public:
+	std::vector<Vertex> vertices;
+	Triangle();
+};
+
+//class Material
+//{
+//public:
+//	Material();
+//};
+//
+
+
+class Mesh
+{
+private:
+	std::vector<Vector<float>>* vertexPositions;
+	std::vector<Vector<float>>* vertexNormals;
+	std::vector<Vector<float>>* textureCoordinates;
+
+	void readOBJ(const std::string& path);
+
+public:
+	std::vector<Triangle>* triangles;
+	//Material material;
+
+	Mesh(std::string path);
+	~Mesh();
+	void renderMesh(); // Add reference to render target (ie buffers)
+};
+
+
+class Object
+{
+private:
+	std::vector<Object*> children;
+
+public:
+	Matrix<float> transform;
+	Mesh* mesh;
+
+	Object();
+	void render();
+	void transformByMatrix();
+	void translate();
+	void rotate();
+	void scale();
+
+	void addChild(Object& newChild);
+	std::vector<Object*>& getChildren();
+};
+
+Object createObjectFromFile(std::string path);
+
+class Pointlight : Object
+{
+
+};
