@@ -1,3 +1,4 @@
+#include <iostream>
 #include "utils.h"
 
 void assert(bool condition, std::string message, const std::source_location location)
