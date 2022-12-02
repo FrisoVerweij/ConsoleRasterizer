@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include "linalg.h"
+#include <optional>
 
 class Vertex
 {
@@ -36,19 +37,20 @@ public:
 class Mesh
 {
 private:
-	std::vector<Vector<float>>* vertexPositions;
-	std::vector<Vector<float>>* vertexNormals;
-	std::vector<Vector<float>>* textureCoordinates;
+	std::vector<Vector<float>> vertexPositions;
+	std::vector<Vector<float>> vertexNormals;
+	std::vector<Vector<float>> textureCoordinates;
 
 	void readOBJ(const std::string& path);
 
 public:
-	std::vector<Triangle>* triangles;
+	std::vector<Triangle> triangles;
 	//Material material;
 
 	Mesh(std::string path);
 	~Mesh();
 	void renderMesh(); // Add reference to render target (ie buffers)
+	void print();
 };
 
 
@@ -59,14 +61,15 @@ private:
 
 public:
 	Matrix<float> transform;
-	Mesh* mesh;
+	Mesh* mesh; // Mesh should be heap allocated
 
 	Object();
 	void render();
-	void transformByMatrix();
-	void translate();
-	void rotate();
-	void scale();
+	void transformByMatrix(Matrix<float>& transformation);
+	void translate(float translateX, float translateY, float translateZ);
+	void rotate(float rotateX, float rotateY, float rotateZ);
+	void scale(float scaleX, float scaleY, float scaleZ);
+	void scale(float scalingFactor);
 
 	void addChild(Object& newChild);
 	std::vector<Object*>& getChildren();
