@@ -1,7 +1,15 @@
 #include <iostream>
+#include "utils.h"
+#include "linalg.h"
+#include "geometry.h"
+#include "scene.h"
 
 int main()
 {
-	std::cout << "Hello world!" << std::endl;
+	//Scene scene;
+	//Object newObject = scene.createObjectFromFile("testing/model.obj");
+	//newObject.mesh->print();
+
+	std::cin.get();
 	return 1;
 }

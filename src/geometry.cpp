@@ -1,7 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <type_traits>
-#include "linalg.h"
 #include "utils.h"
 #include "geometry.h"
 
@@ -49,6 +47,11 @@ Mesh::Mesh(std::string path)
 
 Mesh::~Mesh()
 {}
+
+void Mesh::renderMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer)
+{
+	// Actual rendering
+}
 
 void Mesh::print()
 {
@@ -153,6 +156,19 @@ Object::Object()
 	mesh = nullptr;
 }
 
+void Object::render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer)
+{
+	toWorld = toWorld.matmul(transform);
+
+	if (mesh != nullptr)
+		mesh->renderMesh(toCamera, toWorld, rasterizer);
+
+	//for (Object child : children)
+	//{
+	//	child.render(toCamera, toWorld, rasterizer);
+	//}
+}
+
 void Object::transformByMatrix(Matrix<float>& transformation)
 {
 	transform = transformation.matmul(transform);
@@ -191,18 +207,17 @@ void Object::scale(float scalingFactor)
 
 void Object::addChild(Object& newChild)
 {
-	children.push_back(&newChild);
+	//children.push_back(newChild);
+	parent = true;
 }
 
-std::vector<Object*>& Object::getChildren()
+//std::vector<Object&> Object::getChildren()
+//{
+//	return children;
+//}
+
+bool Object::hasParent()
 {
-	return children;
+	return parent;
 }
 
-Object createObjectFromFile(std::string path) 
-{
-	Object newObject;
-	Mesh* mesh = new Mesh(path);
-	newObject.mesh = mesh;
-	return newObject;
-}

@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include "linalg.h"
-#include <optional>
+#include "rasterization.h"
 
 class Vertex
 {
@@ -49,7 +49,7 @@ public:
 
 	Mesh(std::string path);
 	~Mesh();
-	void renderMesh(); // Add reference to render target (ie buffers)
+	void renderMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer); // Add reference to render target (ie buffers)
 	void print();
 };
 
@@ -57,14 +57,15 @@ public:
 class Object
 {
 private:
-	std::vector<Object*> children;
+	//std::vector<Object&> children;
+	bool parent;
 
 public:
 	Matrix<float> transform;
 	Mesh* mesh; // Mesh should be heap allocated
 
 	Object();
-	void render();
+	void render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer);
 	void transformByMatrix(Matrix<float>& transformation);
 	void translate(float translateX, float translateY, float translateZ);
 	void rotate(float rotateX, float rotateY, float rotateZ);
@@ -72,10 +73,9 @@ public:
 	void scale(float scalingFactor);
 
 	void addChild(Object& newChild);
-	std::vector<Object*>& getChildren();
+	std::vector<Object&> getChildren();
+	bool hasParent();
 };
-
-Object createObjectFromFile(std::string path);
 
 class Pointlight : Object
 {
