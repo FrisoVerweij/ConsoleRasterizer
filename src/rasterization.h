@@ -1,12 +1,10 @@
 #pragma once
 #include <vector>
 #include "linalg.h"
-//#include "scene.h"
 
 class RenderBuffers
 {
 public:
-	int width, height;
 	std::vector<float> frameBuffer;
 	std::vector<float> zBuffer;
 	RenderBuffers(int width, int height);
@@ -20,8 +18,8 @@ public:
 	Matrix<float> projectionMatrix;
 
 	Rasterizer();
-	//Rasterizer(Camera& camera);
-	//void linkCamera(Camera& camera);
+	Rasterizer(int imageWidth, int imageHeight, float fov, float nearClipping, float farClipping);
+	void setCameraSettings(int imageWidth, int imageHeight, float fov, float nearClipping, float farClipping);
 	Matrix<float> makeProjectionMatrix(float aspect, float fov, float zNear, float zFar);
 
 };

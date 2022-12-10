@@ -1,5 +1,78 @@
 #include "scene.h"
 
+Object::Object()
+{
+	transform = createIdentityMatrix<float>(4);
+	mesh = nullptr;
+}
+
+void Object::render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer)
+{
+	toWorld = toWorld.matmul(transform);
+
+	if (mesh != nullptr)
+		mesh->renderMesh(toCamera, toWorld, rasterizer);
+
+	for (Object* child : children)
+	{
+		child->render(toCamera, toWorld, rasterizer);
+	}
+}
+
+void Object::transformByMatrix(Matrix<float>& transformation)
+{
+	transform = transformation.matmul(transform);
+}
+
+void Object::translate(float translateX, float translateY, float translateZ)
+{
+	Matrix<float> translationgMatrix = { {1, 0, 0, translateX},
+										 {0, 1, 0, translateY},
+										 {0, 0, 1, translateZ},
+										 {0, 0, 0, 1} };
+	transformByMatrix(translationgMatrix);
+}
+
+void Object::rotate(float rotateX, float rotateY, float rotateZ)
+{
+	// Not yet implemented
+}
+
+void Object::scale(float scaleX, float scaleY, float scaleZ)
+{
+	Matrix<float> scalingMatrix = { {scaleX, 0, 0, 0},
+									{0, scaleY, 0, 0},
+									{0, 0, scaleZ, 0},
+									{0, 0, 0,      1} };
+	transformByMatrix(scalingMatrix);
+
+}
+
+void Object::scale(float scalingFactor)
+{
+	Matrix<float> scalingMatrix = createIdentityMatrix<float>(4) * scalingFactor;
+	transformByMatrix(scalingMatrix);
+}
+
+
+void Object::addChild(Object& newChild)
+{
+	children.push_back(&newChild);
+	parent = true;
+}
+
+std::vector<Object*> Object::getChildren()
+{
+	return children;
+}
+
+bool Object::hasParent()
+{
+	return parent;
+}
+
+
+
 Camera::Camera(int resolutionWidth, int resolutionHeight, float fov, float nearClipping, float farClipping)
 	: Object(), resolutionWidth(resolutionWidth), resolutionHeight(resolutionHeight), fov(fov), nearClipping(nearClipping), farClipping(farClipping)
 {}
@@ -15,6 +88,8 @@ Object& Scene::createObjectFromFile(const std::string& path)
 	Object& newObject = sceneObjects[sceneObjects.size() - 1];
 	Mesh* mesh = new Mesh(path);
 	newObject.mesh = mesh;
+
+	std::cout << &newObject << std::endl;
 	return newObject;
 }
 
@@ -42,7 +117,8 @@ void Scene::render(Rasterizer& rasterizer) // Change return type
 
 	Matrix<float> toWorld = createIdentityMatrix<float>(4);
 	Matrix<float> toCamera = activeCamera->transform.inverse();
-	//rasterizer.linkCamera(*activeCamera);
+	rasterizer.setCameraSettings(activeCamera->resolutionWidth, activeCamera->resolutionHeight, activeCamera->fov,
+		activeCamera->nearClipping, activeCamera->farClipping);
 
 	// Start rendering the objects in the scene without parent, or in other words, root objects
 	for (Object obj : sceneObjects)

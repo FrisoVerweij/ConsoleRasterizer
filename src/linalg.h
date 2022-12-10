@@ -79,7 +79,7 @@ private:
 		for (int i = 0; i < m_Height; i++)
 		{
 			for (int j = 0; j < m_Width; j++)
-				newCofactorMatrix.push_back(pow(-1, i+j) * getMinor(i, j).determinant());
+				newCofactorMatrix.push_back((T)pow(-1, i+j) * getMinor(i, j).determinant());
 		}
 
 		return Matrix<T>(newCofactorMatrix, m_Height, m_Width);
@@ -209,7 +209,7 @@ public:
 		for (int column = 0; column < m_Width; column++)
 		{
 			Matrix<T> currentMinor = getMinor(0, column);
-			output += pow(-1, column) * m_Values[column] * currentMinor.determinant();
+			output += (T)pow(-1, column) * m_Values[column] * currentMinor.determinant();
 		}
 		return output;
 	}
@@ -316,11 +316,11 @@ public:
 	Vector() {}
 
 	Vector(std::initializer_list<T> inputValues)
-		: Matrix<T>(inputValues, inputValues.size(), 1)
+		: Matrix<T>(inputValues, (int)inputValues.size(), 1)
 	{}
 
 	Vector(std::vector<T> inputValues)
-		: Matrix<T>(inputValues, inputValues.size(), 1)
+		: Matrix<T>(inputValues, (int)inputValues.size(), 1)
 	{}
 
 	T& operator () (int x)

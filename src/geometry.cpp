@@ -31,12 +31,6 @@ Triangle::Triangle()
 
 Mesh::Mesh(std::string path)
 {
-	// Allocate data on stack as their sizes can become large
-	//vertexPositions = new std::vector<Vector<float>>;
-	//vertexNormals = new std::vector<Vector<float>>;
-	//textureCoordinates = new std::vector<Vector<float>>;
-	//triangles = new std::vector<Triangle>;
-
 	// Read file
 	std::string extension = path.substr(path.find_last_of("."));
 	if (extension == ".obj")
@@ -67,7 +61,7 @@ void Mesh::print()
 	for (Vector<float> v : vertexNormals)
 		v.transpose().print();
 
-	std::cout << "\n\Triangles:" << std::endl;
+	std::cout << "\nTriangles:" << std::endl;
 	for (int i = 0; i < triangles.size(); i++)
 	{
 		Triangle t = triangles[i];
@@ -147,77 +141,3 @@ void Mesh::readOBJ(const std::string& path)
 
 	file.close();
 }
-
-
-
-Object::Object()
-{
-	transform = createIdentityMatrix<float>(4);
-	mesh = nullptr;
-}
-
-void Object::render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer)
-{
-	toWorld = toWorld.matmul(transform);
-
-	if (mesh != nullptr)
-		mesh->renderMesh(toCamera, toWorld, rasterizer);
-
-	//for (Object child : children)
-	//{
-	//	child.render(toCamera, toWorld, rasterizer);
-	//}
-}
-
-void Object::transformByMatrix(Matrix<float>& transformation)
-{
-	transform = transformation.matmul(transform);
-}
-
-void Object::translate(float translateX, float translateY, float translateZ)
-{
-	Matrix<float> translationgMatrix = { {1, 0, 0, translateX},
-										 {0, 1, 0, translateY},
-										 {0, 0, 1, translateZ},
-										 {0, 0, 0, 1} };
-	transformByMatrix(translationgMatrix);
-}
-
-void Object::rotate(float rotateX, float rotateY, float rotateZ)
-{
-	// Not yet implemented
-}
-
-void Object::scale(float scaleX, float scaleY, float scaleZ)
-{
-	Matrix<float> scalingMatrix = { {scaleX, 0, 0, 0},
-									{0, scaleY, 0, 0},
-									{0, 0, scaleZ, 0},
-									{0, 0, 0,      1} };
-	transformByMatrix(scalingMatrix);
-
-}
-
-void Object::scale(float scalingFactor)
-{
-	Matrix<float> scalingMatrix = createIdentityMatrix<float>(4) * scalingFactor;
-	transformByMatrix(scalingMatrix);
-}
-
-
-void Object::addChild(Object& newChild)
-{
-	//children.push_back(newChild);
-	parent = true;
-}
-
-//std::vector<Object&> Object::getChildren()
-//{
-//	return children;
-//}
-
-bool Object::hasParent()
-{
-	return parent;
-}
-

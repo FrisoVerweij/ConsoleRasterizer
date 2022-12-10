@@ -5,6 +5,35 @@
 #include "rasterization.h"
 #include "geometry.h"
 
+
+class Object
+{
+private:
+	std::vector<Object*> children;
+	bool parent;
+
+public:
+	Matrix<float> transform;
+	Mesh* mesh; // Mesh should be heap allocated
+
+	Object();
+	void render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer);
+	void transformByMatrix(Matrix<float>& transformation);
+	void translate(float translateX, float translateY, float translateZ);
+	void rotate(float rotateX, float rotateY, float rotateZ);
+	void scale(float scaleX, float scaleY, float scaleZ);
+	void scale(float scalingFactor);
+
+	void addChild(Object& newChild);
+	std::vector<Object*> getChildren();
+	bool hasParent();
+};
+
+class Pointlight : Object
+{
+
+};
+
 class Camera : public Object
 {
 public:

@@ -1,7 +1,6 @@
 #include "rasterization.h"
 
 RenderBuffers::RenderBuffers(int width, int height)
-		: width(width), height(height)
 	{
 		frameBuffer = std::vector<float>(height * width * 3, 0.0f);
 		zBuffer = std::vector<float>(height * width, 100000.0f);
@@ -10,20 +9,22 @@ RenderBuffers::RenderBuffers(int width, int height)
 Rasterizer::Rasterizer()
 {
 	buffers = nullptr;
+	imageWidth = 0;
+	imageHeight = 0;
 }
 
-//Rasterizer::Rasterizer(Camera& camera)
-//{
-//	linkCamera(camera);
-//}
-//
-//void Rasterizer::linkCamera(Camera& camera)
-//{
-//	imageWidth = camera.resolutionWidth;
-//	imageHeight = camera.resolutionHeight;
-//	buffers = new RenderBuffers(imageWidth, imageHeight);
-//	projectionMatrix = makeProjectionMatrix((float)imageHeight / (float)imageWidth, camera.fov, camera.nearClipping, camera.farClipping);
-//}
+Rasterizer::Rasterizer(int imageWidth, int imageHeight, float fov, float nearClipping, float farClipping)
+{
+	setCameraSettings(imageWidth, imageHeight, fov, nearClipping, farClipping);
+}
+
+void Rasterizer::setCameraSettings(int imageWidth, int imageHeight, float fov, float nearClipping, float farClipping)
+{
+	this->imageWidth = imageWidth;
+	this->imageHeight = imageHeight;
+	buffers = new RenderBuffers(imageWidth, imageHeight);
+	projectionMatrix = makeProjectionMatrix((float)imageHeight / (float)imageWidth, fov, nearClipping, farClipping);
+}
 
 Matrix<float> Rasterizer::makeProjectionMatrix(float aspect, float fov, float zNear, float zFar)
 {
