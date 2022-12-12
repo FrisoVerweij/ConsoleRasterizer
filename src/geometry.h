@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include "linalg.h"
-#include <optional>
 
 class Vertex
 {
@@ -26,12 +25,6 @@ public:
 	Triangle();
 };
 
-//class Material
-//{
-//public:
-//	Material();
-//};
-//
 
 
 class Mesh
@@ -49,35 +42,5 @@ public:
 
 	Mesh(std::string path);
 	~Mesh();
-	void renderMesh(); // Add reference to render target (ie buffers)
 	void print();
-};
-
-
-class Object
-{
-private:
-	std::vector<Object*> children;
-
-public:
-	Matrix<float> transform;
-	Mesh* mesh; // Mesh should be heap allocated
-
-	Object();
-	void render();
-	void transformByMatrix(Matrix<float>& transformation);
-	void translate(float translateX, float translateY, float translateZ);
-	void rotate(float rotateX, float rotateY, float rotateZ);
-	void scale(float scaleX, float scaleY, float scaleZ);
-	void scale(float scalingFactor);
-
-	void addChild(Object& newChild);
-	std::vector<Object*>& getChildren();
-};
-
-Object createObjectFromFile(std::string path);
-
-class Pointlight : Object
-{
-
 };

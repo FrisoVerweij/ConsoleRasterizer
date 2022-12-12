@@ -131,10 +131,18 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\rasterization.cpp" />
+    <ClCompile Include="src\scene.cpp" />
+    <ClCompile Include="src\geometry.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\geometry.h" />
+    <ClInclude Include="src\linalg.h" />
+    <ClInclude Include="src\rasterization.h" />
+    <ClInclude Include="src\scene.h" />
+    <ClInclude Include="src\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
