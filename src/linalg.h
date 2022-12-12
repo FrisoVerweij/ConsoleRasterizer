@@ -104,7 +104,7 @@ public:
 				m_Values.push_back(value);
 			}
 		}
-		std::cout << "Created Matrix of size (" << m_Height << ", " << m_Width << ")." << std::endl;
+		//std::cout << "Created Matrix of size (" << m_Height << ", " << m_Width << ")." << std::endl;
 	}
 
 	Matrix(std::vector<T> inputValues, int height, int width)

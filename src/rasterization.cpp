@@ -1,4 +1,7 @@
 #include "rasterization.h"
+#include <iostream>
+#include <thread>
+#include <Windows.h>
 
 RenderBuffers::RenderBuffers(int width, int height)
 	{
@@ -8,7 +11,15 @@ RenderBuffers::RenderBuffers(int width, int height)
 
 void Rasterizer::clearDisplay()
 {
-	std::cout << "\x1B[2J\x1B[H";
+	HANDLE hStdout;
+	COORD destCoord;
+	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	//position cursor at start of window
+	destCoord.X = 0;
+	destCoord.Y = 0;
+	SetConsoleCursorPosition(hStdout, destCoord);
+	//std::cout << "\x1B[2J\x1B[H";
 }
 
 std::vector<float> Rasterizer::grayscaleBuffer()
@@ -80,7 +91,7 @@ void Rasterizer::setCameraSettings(int imageWidth, int imageHeight, float fov, f
 Matrix<float> Rasterizer::makeProjectionMatrix(float aspect, float fov, float zNear, float zFar)
 {
 	projectionMatrix = createEmptyMatrix<float>(4, 4);
-	projectionMatrix(0, 0) = aspect * (1 / tan(fov / 2));
+	projectionMatrix(0, 0) = aspect / tan(fov / 2);
 	projectionMatrix(1, 1) = 1 / tan(fov / 2);
 	projectionMatrix(2, 2) = zFar / (zFar - zNear);
 	projectionMatrix(2, 3) = (-zFar * zNear) / (zFar - zNear);
@@ -90,18 +101,24 @@ Matrix<float> Rasterizer::makeProjectionMatrix(float aspect, float fov, float zN
 
 void Rasterizer::toDisplay()
 {
-	clearDisplay();
 	std::vector<float> buffer = grayscaleBuffer();
+
+	std::string output = "";
 	
 	for (int y = 0; y < imageHeight; y++)
 	{
 		for (int x = 0; x < imageWidth; x++)
 		{
 			char pixel = getCharFromIntensity(buffer[y * imageWidth + x]);
-			putchar(pixel);
+			output += pixel;
 		}
-		putchar('\n');
+		if (y != imageHeight - 1)
+			output += '\n';
 	}
+	clearDisplay();
+	std::cout << output;
+	using namespace std::literals;
+	std::this_thread::sleep_for(100ms);
 }
 
 void Rasterizer::clearBuffers()
@@ -116,7 +133,7 @@ void Rasterizer::clearBuffers()
 
 void Rasterizer::rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Mesh& mesh)
 {
-	std::cout << "mesh" << std::endl;
+	//std::cout << "mesh" << std::endl;
 	for (Triangle triangle : mesh.triangles)
 		rasterizeTriangle(toCamera, toWorld, triangle);
 }

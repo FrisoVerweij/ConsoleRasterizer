@@ -7,9 +7,10 @@
 int main()
 {
 	Scene scene;
-	Object& newObject = scene.createObjectFromFile("testing/untitled.obj");
-	Camera& newCamera = scene.createCamera(60, 20, 90.0f, 0.01f, 100.0f);
+	Object& newObject = scene.createObjectFromFile("testing/model.obj");
+	Camera& newCamera = scene.createCamera(300, 150, 90.0f, 0.01f, 100.0f);
 	newCamera.translate(0, 0, -3.0f);
+	//newObject.translate(0, -5, 0);
 
 	scene.summary();
 
@@ -24,12 +25,13 @@ int main()
 
 	while (true)
 	{
-		std::cin.get();
+		//std::cin.get();
 		rast.clearBuffers();
-		newObject.translate(0.3f, 0, 0);
+		//newObject.translate(0.3f, 0, 0);
+		newObject.rotate(0, 1, 0);
 		scene.render(rast);
 		rast.toDisplay();
-		scene.sceneObjects[0].transform.print();
+		//scene.sceneObjects[0].transform.print();
 	}
 
 	std::cin.get();

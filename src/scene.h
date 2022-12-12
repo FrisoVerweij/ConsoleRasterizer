@@ -14,9 +14,10 @@ private:
 
 public:
 	Matrix<float> transform;
-	Mesh* mesh; // Mesh should be heap allocated
+	Mesh* mesh;
 
 	Object();
+	~Object();
 	void render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer);
 	void transformByMatrix(Matrix<float>& transformation);
 	void translate(float translateX, float translateY, float translateZ);

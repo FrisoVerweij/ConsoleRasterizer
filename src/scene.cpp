@@ -1,4 +1,5 @@
 #include "scene.h"
+#include <numbers>
 
 Object::Object()
 {
@@ -7,9 +8,14 @@ Object::Object()
 	parent = false;
 }
 
+Object::~Object()
+{
+	delete mesh;
+}
+
 void Object::render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer)
 {
-	std::cout << "Rendering object" << std::endl;
+	//std::cout << "Rendering object" << std::endl;
 	toWorld = toWorld.matmul(transform);
 
 	if (mesh != nullptr)
@@ -39,7 +45,29 @@ void Object::translate(float translateX, float translateY, float translateZ)
 
 void Object::rotate(float rotateX, float rotateY, float rotateZ)
 {
-	// Not yet implemented
+
+	rotateX *= std::numbers::pi / 180;
+	rotateY *= std::numbers::pi / 180;
+	rotateZ *= std::numbers::pi / 180;
+
+	Matrix<float> rotX = {  {1, 0,	0, 0},
+							{0, cos(rotateX), sin(rotateX), 0},
+							{0, -sin(rotateX), cos(rotateX), 0},
+							{0, 0, 0, 1} };
+
+	Matrix<float> rotY = { {cos(rotateY), 0, -sin(rotateY), 0},
+						   {0, 1, 0, 0},
+						   {sin(rotateY), 0, cos(rotateY), 0},
+						   {0, 0, 0, 1} };
+
+	Matrix<float> rotZ = { {cos(rotateZ), -sin(rotateZ), 0, 0},
+						   {sin(rotateZ), cos(rotateZ), 0, 0},
+						   {0, 0, 1, 0},
+						   {0, 0, 0, 1} };
+
+	Matrix<float> rotationMatrix = rotY.matmul(rotX);
+	rotationMatrix = rotZ.matmul(rotationMatrix);
+	transformByMatrix(rotationMatrix);
 }
 
 void Object::scale(float scaleX, float scaleY, float scaleZ)
@@ -113,7 +141,7 @@ void Scene::setActiveCamera(Camera& camera)
 
 void Scene::render(Rasterizer& rasterizer)
 {
-	std::cout << "Rendering scene" << std::endl;
+	//std::cout << "Rendering scene" << std::endl;
 	if (activeCamera == nullptr)
 	{
 		std::cout << "Scene: No active camera!" << std::endl;
@@ -126,9 +154,9 @@ void Scene::render(Rasterizer& rasterizer)
 		activeCamera->nearClipping, activeCamera->farClipping);
 
 	// Start rendering the objects in the scene without parent, or in other words, root objects
-	for (Object obj : sceneObjects)
+	for (Object& obj : sceneObjects)
 	{
-		std::cout << obj.hasParent() << std::endl;
+		//std::cout << obj.hasParent() << std::endl;
 
 		if (!obj.hasParent())
 			obj.render(toCamera, toWorld, rasterizer);
