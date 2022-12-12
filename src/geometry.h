@@ -25,12 +25,6 @@ public:
 	Triangle();
 };
 
-//class Material
-//{
-//public:
-//	Material();
-//};
-//
 
 
 class Mesh
@@ -48,6 +42,5 @@ public:
 
 	Mesh(std::string path);
 	~Mesh();
-	//void renderMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer); // Add reference to render target (ie buffers)
 	void print();
 };

@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <string>
-#include "rasterization.h"
 #include "geometry.h"
 
 
@@ -18,7 +17,6 @@ public:
 
 	Object();
 	~Object();
-	void render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer);
 	void transformByMatrix(Matrix<float>& transformation);
 	void translate(float translateX, float translateY, float translateZ);
 	void rotate(float rotateX, float rotateY, float rotateZ);
@@ -61,7 +59,7 @@ public:
 	Object& createObjectFromFile(const std::string& path);
 	Camera& createCamera(int resolutionWidth, int resolutionHeight, float fov, float nearClipping, float farClipping);
 	void setActiveCamera(Camera& camera);
-	void render(Rasterizer& rasterizer);
+	Camera* getActiveCamera();
 	void summary();
 };
 

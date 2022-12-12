@@ -13,22 +13,6 @@ Object::~Object()
 	delete mesh;
 }
 
-void Object::render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer)
-{
-	//std::cout << "Rendering object" << std::endl;
-	toWorld = toWorld.matmul(transform);
-
-	if (mesh != nullptr)
-	{
-		rasterizer.rasterizeMesh(toCamera, toWorld, *mesh);
-	}
-
-	for (Object* child : children)
-	{
-		child->render(toCamera, toWorld, rasterizer);
-	}
-}
-
 void Object::transformByMatrix(Matrix<float>& transformation)
 {
 	transform = transformation.matmul(transform);
@@ -83,6 +67,7 @@ void Object::scale(float scaleX, float scaleY, float scaleZ)
 void Object::scale(float scalingFactor)
 {
 	Matrix<float> scalingMatrix = createIdentityMatrix<float>(4) * scalingFactor;
+	scalingMatrix(3, 3) = 1;
 	transformByMatrix(scalingMatrix);
 }
 
@@ -139,28 +124,9 @@ void Scene::setActiveCamera(Camera& camera)
 	activeCamera = &camera;
 }
 
-void Scene::render(Rasterizer& rasterizer)
+Camera* Scene::getActiveCamera()
 {
-	//std::cout << "Rendering scene" << std::endl;
-	if (activeCamera == nullptr)
-	{
-		std::cout << "Scene: No active camera!" << std::endl;
-		return;
-	}
-
-	Matrix<float> toWorld = createIdentityMatrix<float>(4);
-	Matrix<float> toCamera = activeCamera->transform.inverse();
-	rasterizer.setCameraSettings(activeCamera->resolutionWidth, activeCamera->resolutionHeight, activeCamera->fov,
-		activeCamera->nearClipping, activeCamera->farClipping);
-
-	// Start rendering the objects in the scene without parent, or in other words, root objects
-	for (Object& obj : sceneObjects)
-	{
-		//std::cout << obj.hasParent() << std::endl;
-
-		if (!obj.hasParent())
-			obj.render(toCamera, toWorld, rasterizer);
-	}
+	return activeCamera;
 }
 
 void Scene::summary()

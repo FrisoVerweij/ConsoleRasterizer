@@ -3,16 +3,16 @@
 #include "linalg.h"
 #include "geometry.h"
 #include "scene.h"
+#include "rasterization.h"
 
 int main()
 {
 	Scene scene;
 	Object& newObject = scene.createObjectFromFile("testing/model.obj");
-	Camera& newCamera = scene.createCamera(300, 150, 90.0f, 0.01f, 100.0f);
+	Camera& newCamera = scene.createCamera(80, 40, 90.0f, 0.01f, 100.0f);
 	newCamera.translate(0, 0, -3.0f);
+	//newObject.scale(0.2f);
 	//newObject.translate(0, -5, 0);
-
-	scene.summary();
 
 	//std::cout << &newObject << std::endl;
 	//newObject.mesh->print();
@@ -20,7 +20,7 @@ int main()
 	//std::cin.get();
 
 	Rasterizer rast;
-	scene.render(rast);
+	rast.render(scene);
 	rast.toDisplay();
 
 	while (true)
@@ -29,9 +29,9 @@ int main()
 		rast.clearBuffers();
 		//newObject.translate(0.3f, 0, 0);
 		newObject.rotate(0, 1, 0);
-		scene.render(rast);
+		rast.render(scene);
 		rast.toDisplay();
-		//scene.sceneObjects[0].transform.print();
+		scene.sceneObjects[0].transform.print();
 	}
 
 	std::cin.get();

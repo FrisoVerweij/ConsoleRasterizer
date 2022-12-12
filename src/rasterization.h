@@ -2,6 +2,7 @@
 #include <vector>
 #include "linalg.h"
 #include "geometry.h"
+#include "scene.h"
 
 class RenderBuffers
 {
@@ -19,6 +20,9 @@ private:
 	float grayscale(float red, float green, float blue);
 	char getCharFromIntensity(float intensity);
 	void rasterizeTriangle(Matrix<float>& toCamera, Matrix<float> toWorld, Triangle& triangle);
+	void rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Mesh* mesh);
+	void renderObject(Matrix<float>& toCamera, Matrix<float> toWorld, Object& object);
+
 
 public:
 	int imageWidth, imageHeight;
@@ -31,6 +35,7 @@ public:
 	Matrix<float> makeProjectionMatrix(float aspect, float fov, float zNear, float zFar);
 	void toDisplay();
 	void clearBuffers();
+	void render(Scene& scene);
 
-	void rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Mesh& mesh);
+	
 };

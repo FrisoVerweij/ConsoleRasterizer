@@ -68,6 +68,30 @@ void Rasterizer::rasterizeTriangle(Matrix<float>& toCamera, Matrix<float> toWorl
 	}
 }
 
+void Rasterizer::rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Mesh* mesh)
+{
+	//std::cout << "mesh" << std::endl;
+	for (Triangle& triangle : mesh->triangles)
+		rasterizeTriangle(toCamera, toWorld, triangle);
+}
+
+void Rasterizer::renderObject(Matrix<float>& toCamera, Matrix<float> toWorld, Object& object)
+{
+	//std::cout << "Rendering object" << std::endl;
+	toWorld = toWorld.matmul(object.transform);
+
+	if (object.mesh != nullptr)
+	{
+		rasterizeMesh(toCamera, toWorld, object.mesh);
+	}
+
+	for (Object* child : object.getChildren())
+	{
+		renderObject(toCamera, toWorld, *child);
+	}
+}
+
+
 Rasterizer::Rasterizer()
 {
 	buffers = nullptr;
@@ -118,7 +142,7 @@ void Rasterizer::toDisplay()
 	clearDisplay();
 	std::cout << output;
 	using namespace std::literals;
-	std::this_thread::sleep_for(100ms);
+	std::this_thread::sleep_for(10ms);
 }
 
 void Rasterizer::clearBuffers()
@@ -131,9 +155,24 @@ void Rasterizer::clearBuffers()
 }
 
 
-void Rasterizer::rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Mesh& mesh)
+void Rasterizer::render(Scene& scene)
 {
-	//std::cout << "mesh" << std::endl;
-	for (Triangle triangle : mesh.triangles)
-		rasterizeTriangle(toCamera, toWorld, triangle);
+	Camera* activeCamera = scene.getActiveCamera();
+	if (activeCamera == nullptr)
+	{
+		std::cout << "Scene: No active camera!" << std::endl;
+		return;
+	}
+
+	Matrix<float> toWorld = createIdentityMatrix<float>(4);
+	Matrix<float> toCamera = activeCamera->transform.inverse();
+	setCameraSettings(activeCamera->resolutionWidth, activeCamera->resolutionHeight, activeCamera->fov,
+		activeCamera->nearClipping, activeCamera->farClipping);
+
+	// Start rendering the objects in the scene without parent, or in other words, root objects
+	for (Object& obj : scene.sceneObjects)
+	{
+		if (!obj.hasParent())
+			renderObject(toCamera, toWorld, obj);
+	}
 }
