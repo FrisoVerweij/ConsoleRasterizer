@@ -61,6 +61,7 @@ public:
 	Camera& createCamera(int resolutionWidth, int resolutionHeight, float fov, float nearClipping, float farClipping);
 	void setActiveCamera(Camera& camera);
 	void render(Rasterizer& rasterizer);
+	void summary();
 };
 
 

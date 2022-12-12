@@ -4,14 +4,18 @@ Object::Object()
 {
 	transform = createIdentityMatrix<float>(4);
 	mesh = nullptr;
+	parent = false;
 }
 
 void Object::render(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer)
 {
+	std::cout << "Rendering object" << std::endl;
 	toWorld = toWorld.matmul(transform);
 
 	if (mesh != nullptr)
-		mesh->renderMesh(toCamera, toWorld, rasterizer);
+	{
+		rasterizer.rasterizeMesh(toCamera, toWorld, *mesh);
+	}
 
 	for (Object* child : children)
 	{
@@ -107,8 +111,9 @@ void Scene::setActiveCamera(Camera& camera)
 	activeCamera = &camera;
 }
 
-void Scene::render(Rasterizer& rasterizer) // Change return type
+void Scene::render(Rasterizer& rasterizer)
 {
+	std::cout << "Rendering scene" << std::endl;
 	if (activeCamera == nullptr)
 	{
 		std::cout << "Scene: No active camera!" << std::endl;
@@ -123,8 +128,16 @@ void Scene::render(Rasterizer& rasterizer) // Change return type
 	// Start rendering the objects in the scene without parent, or in other words, root objects
 	for (Object obj : sceneObjects)
 	{
+		std::cout << obj.hasParent() << std::endl;
+
 		if (!obj.hasParent())
 			obj.render(toCamera, toWorld, rasterizer);
 	}
+}
+
+void Scene::summary()
+{
+	std::cout << "Scene summary\nNum objects: " << sceneObjects.size() << "\nNum cameras: " << sceneCameras.size() << std::endl;
+	
 }
 

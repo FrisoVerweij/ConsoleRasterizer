@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include "linalg.h"
-#include "rasterization.h"
 
 class Vertex
 {
@@ -49,6 +48,6 @@ public:
 
 	Mesh(std::string path);
 	~Mesh();
-	void renderMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer); // Add reference to render target (ie buffers)
+	//void renderMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer); // Add reference to render target (ie buffers)
 	void print();
 };
