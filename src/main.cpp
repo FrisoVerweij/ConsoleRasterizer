@@ -55,29 +55,29 @@ int main()
 	//std::cin.get();
 	Scene scene;
 
-	Object& object1 = scene.createEmptyObject();
-	object1.name = "First object";
+	Object* object1 = scene.createEmptyObject();
+	object1->name = "First object";
 
-	Object& newObject = scene.createObjectFromFile("testing/model.obj");
+	Object* newObject = scene.createObjectFromFile("testing/model.obj");
 
-	std::cout << object1.getChildren().size() << std::endl;
-	object1.addChild(newObject);
-	newObject.name = "model";
-
-
-
-	Object& object2 = scene.createEmptyObject();
-	object1.addChild(object2);
+	std::cout << object1->getChildren().size() << std::endl;
+	object1->addChild(newObject);
+	newObject->name = "model";
 
 
-	std::cout << object1.getChildren().size() << std::endl;
 
-	Object& object3 = scene.createEmptyObject();
+	Object* object2 = scene.createEmptyObject();
+	object1->addChild(object2);
+
+
+	std::cout << object1->getChildren().size() << std::endl;
+
+	Object* object3 = scene.createEmptyObject();
 	//newObject.addChild(object3);
 
 
-	Camera& newCamera = scene.createCamera(80, 40, 90.0f, 0.01f, 100.0f);
-	newCamera.translate(0, 0, -3.0f);
+	Camera* newCamera = scene.createCamera(80, 40, 90.0f, 0.01f, 100.0f);
+	newCamera->translate(0, 0, -3.0f);
 	//newObject.scale(0.2f);
 	//newObject.translate(0, -5, 0);
 

@@ -79,19 +79,19 @@ void Rasterizer::rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, M
 		rasterizeTriangle(toCamera, toWorld, triangle);
 }
 
-void Rasterizer::renderObject(Matrix<float>& toCamera, Matrix<float> toWorld, Object& object)
+void Rasterizer::renderObject(Matrix<float>& toCamera, Matrix<float> toWorld, Object* object)
 {
 	//std::cout << "Rendering object" << std::endl;
-	toWorld = toWorld.matmul(object.transform);
+	toWorld = toWorld.matmul(object->transform);
 
-	if (object.mesh != nullptr)
+	if (object->mesh != nullptr)
 	{
-		rasterizeMesh(toCamera, toWorld, object.mesh);
+		rasterizeMesh(toCamera, toWorld, object->mesh);
 	}
 
-	for (Object* child : object.getChildren())
+	for (Object* child : object->getChildren())
 	{
-		renderObject(toCamera, toWorld, *child);
+		renderObject(toCamera, toWorld, child);
 	}
 }
 
@@ -183,9 +183,9 @@ void Rasterizer::render(Scene& scene)
 		activeCamera->nearClipping, activeCamera->farClipping);
 
 	// Start rendering the objects in the scene without parent, or in other words, root objects
-	for (Object& obj : scene.sceneObjects)
+	for (Object* obj : scene.sceneObjects)
 	{
-		if (!obj.hasParent())
+		if (!obj->hasParent())
 			renderObject(toCamera, toWorld, obj);
 	}
 }
