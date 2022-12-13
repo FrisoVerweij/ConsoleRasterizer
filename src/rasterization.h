@@ -20,7 +20,7 @@ private:
 	char getCharFromIntensity(float intensity);
 	void rasterizeTriangle(Matrix<float>& toCamera, Matrix<float> toWorld, Triangle& triangle);
 	void rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Mesh* mesh);
-	void renderObject(Matrix<float>& toCamera, Matrix<float> toWorld, Object& object);
+	void renderObject(Matrix<float>& toCamera, Matrix<float> toWorld, Object* object);
 
 
 public:

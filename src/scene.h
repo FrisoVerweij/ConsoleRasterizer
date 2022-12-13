@@ -26,8 +26,8 @@ public:
 	void scale(float scalingFactor);
 	Vector<float> getPosition();
 
-	void addChild(Object& newChild);
-	void removeChild(Object& child);
+	void addChild(Object* newChild);
+	void removeChild(Object* child);
 	std::vector<Object*> getChildren();
 	bool hasParent();
 	void setParent(Object* parent);
@@ -59,20 +59,20 @@ private:
 	int camCounter;
 	int objCounter;
 
-	void printChildrenNames(Object& object, int numTabs);
-	void deleteObject(Object& object);
+	void printChildrenNames(Object* object, int numTabs);
+	void deleteObject(Object* object);
 
 public:
-	std::vector<Object> sceneObjects;
-	std::vector<Camera> sceneCameras;
+	std::vector<Object*> sceneObjects;
+	std::vector<Camera*> sceneCameras;
 
 	Scene();
-	Object& createObjectFromFile(const std::string& path);
-	Object& createEmptyObject();
-	void removeObject(Object& object);
-	Camera& createCamera(int resolutionWidth, int resolutionHeight, float fov, float nearClipping, float farClipping);
-	void removeCamera(Camera& camera);
-	void setActiveCamera(Camera& camera);
+	Object* createObjectFromFile(const std::string& path);
+	Object* createEmptyObject();
+	void removeObject(Object* object);
+	Camera* createCamera(int resolutionWidth, int resolutionHeight, float fov, float nearClipping, float farClipping);
+	void removeCamera(Camera* camera);
+	void setActiveCamera(Camera* camera);
 	Camera* getActiveCamera();
 	void summary();
 };
