@@ -42,10 +42,6 @@ Mesh::Mesh(std::string path)
 Mesh::~Mesh()
 {}
 
-//void Mesh::renderMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Rasterizer& rasterizer)
-//{
-//	// Actual rendering
-//}
 
 void Mesh::print()
 {

@@ -58,8 +58,12 @@ void Rasterizer::rasterizeTriangle(Matrix<float>& toCamera, Matrix<float> toWorl
 		temp = toWorld.matmul(temp);
 		temp = toCamera.matmul(temp);
 		Vector<float> projected = projectionMatrix.matmul(temp);
-		projected(0) /= projected(2);
-		projected(1) /= projected(2);
+		projected(0) /= projected(3);
+		projected(1) /= projected(3);
+		projected(2) /= projected(3);
+		// Now in image space
+
+		// Placeholder \/
 		int xPixel = (projected(0) + 1) / 2 * imageWidth;
 		int yPixel = (projected(1) + 1) / 2 * imageHeight * 0.65f;
 		buffers->frameBuffer[(yPixel * imageWidth + xPixel) * 3] = 1.0f;
@@ -104,10 +108,19 @@ Rasterizer::Rasterizer(int imageWidth, int imageHeight, float fov, float nearCli
 	setCameraSettings(imageWidth, imageHeight, fov, nearClipping, farClipping);
 }
 
+Rasterizer::~Rasterizer()
+{
+	if (buffers != nullptr)
+		delete buffers;
+}
+
 void Rasterizer::setCameraSettings(int imageWidth, int imageHeight, float fov, float nearClipping, float farClipping)
 {
 	this->imageWidth = imageWidth;
 	this->imageHeight = imageHeight;
+	if (buffers != nullptr)
+		delete buffers;
+
 	buffers = new RenderBuffers(imageWidth, imageHeight);
 	projectionMatrix = makeProjectionMatrix((float)imageHeight / (float)imageWidth, fov, nearClipping, farClipping);
 }
@@ -142,7 +155,7 @@ void Rasterizer::toDisplay()
 	clearDisplay();
 	std::cout << output;
 	using namespace std::literals;
-	std::this_thread::sleep_for(10ms);
+	std::this_thread::sleep_for(100ms);
 }
 
 void Rasterizer::clearBuffers()

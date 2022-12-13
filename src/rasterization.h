@@ -4,9 +4,8 @@
 #include "geometry.h"
 #include "scene.h"
 
-class RenderBuffers
+struct RenderBuffers
 {
-public:
 	std::vector<float> frameBuffer;
 	std::vector<float> zBuffer;
 	RenderBuffers(int width, int height);
@@ -31,6 +30,7 @@ public:
 
 	Rasterizer();
 	Rasterizer(int imageWidth, int imageHeight, float fov, float nearClipping, float farClipping);
+	~Rasterizer();
 	void setCameraSettings(int imageWidth, int imageHeight, float fov, float nearClipping, float farClipping);
 	Matrix<float> makeProjectionMatrix(float aspect, float fov, float zNear, float zFar);
 	void toDisplay();

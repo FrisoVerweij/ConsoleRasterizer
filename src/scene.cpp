@@ -3,14 +3,28 @@
 
 Object::Object()
 {
+	name = "Unnamed object";
 	transform = createIdentityMatrix<float>(4);
 	mesh = nullptr;
-	parent = false;
+	parent = nullptr;
+
+	//std::cout << "Object created" << std::endl;
 }
+
+//Object::Object(const Object& other)
+//{
+//	std::cout << "Copied" << std::endl;
+//
+//	name = other.name;
+//	transform = other.transform;
+//	mesh = other.mesh;
+//	parent = other.parent;
+//}
 
 Object::~Object()
 {
-	delete mesh;
+	//delete mesh;
+	//std::cout << "Object destroyed" << std::endl;
 }
 
 void Object::transformByMatrix(Matrix<float>& transformation)
@@ -51,7 +65,14 @@ void Object::rotate(float rotateX, float rotateY, float rotateZ)
 
 	Matrix<float> rotationMatrix = rotY.matmul(rotX);
 	rotationMatrix = rotZ.matmul(rotationMatrix);
+
+	Vector<float> currentPos = getPosition();
+	translate(-currentPos(0), -currentPos(1), -currentPos(2));
+
+
 	transformByMatrix(rotationMatrix);
+
+	translate(currentPos(0), currentPos(1), currentPos(2));
 }
 
 void Object::scale(float scaleX, float scaleY, float scaleZ)
@@ -71,11 +92,28 @@ void Object::scale(float scalingFactor)
 	transformByMatrix(scalingMatrix);
 }
 
+Vector<float> Object::getPosition()
+{
+	Vector<float> out = { transform(0,3), transform(1,3), transform(2,3) };
+	return out;
+}
 
 void Object::addChild(Object& newChild)
 {
+	std::cout << children.size() << std::endl;
 	children.push_back(&newChild);
-	parent = true;
+	newChild.setParent(this);
+}
+
+void Object::removeChild(Object& child)
+{
+	for (std::vector<Object*>::iterator it = children.begin(); it != children.end(); it++)
+	{
+		if (*it = &child)
+		{
+			children.erase(it);
+		}
+	}
 }
 
 std::vector<Object*> Object::getChildren()
@@ -85,6 +123,19 @@ std::vector<Object*> Object::getChildren()
 
 bool Object::hasParent()
 {
+	if (parent != nullptr)
+		return true;
+	return false;
+}
+
+void Object::setParent(Object* parent)
+{
+	this->parent = parent;
+}
+
+
+Object* Object::getParent()
+{
 	return parent;
 }
 
@@ -92,32 +143,117 @@ bool Object::hasParent()
 
 Camera::Camera(int resolutionWidth, int resolutionHeight, float fov, float nearClipping, float farClipping)
 	: Object(), resolutionWidth(resolutionWidth), resolutionHeight(resolutionHeight), fov(fov), nearClipping(nearClipping), farClipping(farClipping)
-{}
+{
+	name = "Unnamed camera";
+}
+
+
+void Scene::printChildrenNames(Object& object, int numTabs)
+{
+	std::vector<Object*> children = object.getChildren();
+	for (int idx = 0; idx < children.size(); idx++)
+	{
+		Object* child = children[idx];
+
+		if (idx == 0)
+			std::cout << std::string(numTabs - 1, '\t') + "\u2A3D\t";
+		else
+			std::cout << std::string(numTabs, '\t');
+
+		std::cout << child->name << std::endl;
+		printChildrenNames(*child, numTabs + 1);
+	}
+}
+
+void Scene::deleteObject(Object& object)
+{
+	if (object.mesh != nullptr)
+		delete object.mesh;
+
+	if (object.hasParent())
+	{
+		Object* parent = object.getParent();
+		parent->removeChild(object);
+	}
+
+	for (Object* child : object.getChildren())
+	{
+		// Apply parent transform such that child object stays in place
+		child->transformByMatrix(object.transform);
+		child->setParent(object.getParent());
+
+	}
+}
 
 Scene::Scene()
 {
 	activeCamera = nullptr;
+	camCounter = 0;
+	objCounter = 0;
+	sceneObjects.reserve(10);
 }
 
 Object& Scene::createObjectFromFile(const std::string& path)
 {
-	sceneObjects.emplace_back();
-	Object& newObject = sceneObjects[sceneObjects.size() - 1];
+	Object& newObject = createEmptyObject();
 	Mesh* mesh = new Mesh(path);
 	newObject.mesh = mesh;
+	newObject.name = "Object " + std::to_string(objCounter);
 
-	std::cout << &newObject << std::endl;
+
+	std::cout << newObject.getChildren().size() << std::endl;
 	return newObject;
 }
 
+Object& Scene::createEmptyObject()
+{
+	objCounter++;
+	sceneObjects.emplace_back();
+	Object& newObject = sceneObjects[sceneObjects.size() - 1];
+	newObject.name = "Empty object " + std::to_string(objCounter);
+	std::cout << newObject.getChildren().size() << std::endl;
+	return newObject;
+}
+
+void Scene::removeObject(Object& object)
+{
+	deleteObject(object);
+
+	for (std::vector<Object>::iterator it = sceneObjects.begin(); it != sceneObjects.end(); it++)
+	{
+		if (&(*it) == &object)
+		{
+			sceneObjects.erase(it);
+			return;
+		}
+	}
+}
+
+
 Camera& Scene::createCamera(int resolutionWidth, int resolutionHeight, float fov, float nearClipping, float farClipping)
 {
+	camCounter++;
 	sceneCameras.emplace_back(resolutionWidth, resolutionHeight, fov, nearClipping, farClipping);
 	Camera& ref = sceneCameras[sceneCameras.size() - 1];
+	ref.name = "Camera " + std::to_string(camCounter);
 	if (activeCamera == nullptr)
 		setActiveCamera(ref);
 	return ref;
 }
+
+void Scene::removeCamera(Camera& camera)
+{
+	deleteObject(camera);
+	for (std::vector<Camera>::iterator it = sceneCameras.begin(); it != sceneCameras.end(); it++)
+	{
+		if (&(*it) == &camera)
+		{
+			sceneCameras.erase(it);
+			return;
+		}
+	}
+}
+
 
 void Scene::setActiveCamera(Camera& camera)
 {
@@ -131,7 +267,14 @@ Camera* Scene::getActiveCamera()
 
 void Scene::summary()
 {
-	std::cout << "Scene summary\nNum objects: " << sceneObjects.size() << "\nNum cameras: " << sceneCameras.size() << std::endl;
+	for (Object& object : sceneObjects)
+	{
+		if (!object.hasParent())
+		{
+			std::cout << object.name << std::endl;
+			printChildrenNames(object, 1);
+		}
+	}
 	
 }
 
