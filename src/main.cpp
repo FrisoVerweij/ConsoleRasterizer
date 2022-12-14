@@ -60,7 +60,6 @@ int main()
 
 	Object* newObject = scene.createObjectFromFile("testing/model.obj");
 
-	std::cout << object1->getChildren().size() << std::endl;
 	object1->addChild(newObject);
 	newObject->name = "model";
 
@@ -68,12 +67,12 @@ int main()
 
 	Object* object2 = scene.createEmptyObject();
 	object1->addChild(object2);
+	object2->name = "Empty object 2";
 
-
-	std::cout << object1->getChildren().size() << std::endl;
 
 	Object* object3 = scene.createEmptyObject();
-	//newObject.addChild(object3);
+	newObject->addChild(object3);
+	object3->name = "Empty object 3";
 
 
 	Camera* newCamera = scene.createCamera(80, 40, 90.0f, 0.01f, 100.0f);
@@ -88,6 +87,31 @@ int main()
 
 	std::cin.get();
 
+	object1->removeChild(object2);
+	scene.summary();
+	std::cin.get();
+
+	scene.removeObject(newObject);
+
+	scene.summary();
+	std::cin.get();
+
+
+	object3->addChild(object2);
+
+	scene.summary();
+	std::cin.get();
+
+	newObject = scene.createObjectFromFile("testing/model.obj");
+	newObject->name = "boss";
+
+	newObject->addChild(object1);
+
+
+	scene.summary();
+	std::cin.get();
+
+
 	Rasterizer rast;
 	rast.render(scene);
 	rast.toDisplay();
@@ -96,7 +120,7 @@ int main()
 	{
 		//std::cin.get();
 		rast.clearBuffers();
-		//newObject.rotate(0, 1, 0);
+		newObject->rotate(0, 1, 0);
 		//newObject.translate(0.1f, 0, 0);
 		rast.render(scene);
 		rast.toDisplay();

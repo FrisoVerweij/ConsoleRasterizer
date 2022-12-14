@@ -100,18 +100,19 @@ Vector<float> Object::getPosition()
 
 void Object::addChild(Object* newChild)
 {
-	std::cout << children.size() << std::endl;
 	children.push_back(newChild);
 	newChild->setParent(this);
 }
 
 void Object::removeChild(Object* child)
 {
-	for (std::vector<Object*>::iterator it = children.begin(); it != children.end(); it++)
+	child->setParent(nullptr);
+	for (std::vector<Object*>::iterator it = children.begin(); it != children.end(); ++it)
 	{
-		if (*it = child)
+		if ((*it) == child)
 		{
 			children.erase(it);
+			break;
 		}
 	}
 }
@@ -155,10 +156,11 @@ void Scene::printChildrenNames(Object* object, int numTabs)
 	{
 		Object* child = children[idx];
 
+		std::cout << "| ";
 		if (idx == 0)
-			std::cout << std::string(numTabs - 1, '\t') + "\u2A3D\t";
+			std::cout << std::string(numTabs * 2, ' ') + (char)192 + ' ';
 		else
-			std::cout << std::string(numTabs, '\t');
+			std::cout << std::string(numTabs * 2 + 2, ' ');
 
 		std::cout << child->name << std::endl;
 		printChildrenNames(child, numTabs + 1);
@@ -170,19 +172,22 @@ void Scene::deleteObject(Object* object)
 	if (object->mesh != nullptr)
 		delete object->mesh;
 
+
+	Object* parent = object->getParent();
 	if (object->hasParent())
-	{
-		Object* parent = object->getParent();
 		parent->removeChild(object);
-	}
 
 	for (Object* child : object->getChildren())
 	{
 		// Apply parent transform such that child object stays in place
-		child->transformByMatrix(object->transform);
-		child->setParent(object->getParent());
+		//child->transformByMatrix(object->transform);
+		child->setParent(parent);
+		parent->addChild(child);
 
+		// Apply transformation
 	}
+
+	delete object;
 }
 
 Scene::Scene()
@@ -262,12 +267,15 @@ Camera* Scene::getActiveCamera()
 
 void Scene::summary()
 {
+	std::cout << (char)254;
+	std::cout << " Scene:" << std::endl;
 	for (Object* object : sceneObjects)
 	{
 		if (!object->hasParent())
 		{
+			std::cout << "| ";
 			std::cout << object->name << std::endl;
-			printChildrenNames(object, 1);
+			printChildrenNames(object, 0);
 		}
 	}
 	
