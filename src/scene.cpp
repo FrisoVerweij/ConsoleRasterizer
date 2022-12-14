@@ -219,6 +219,15 @@ Scene::Scene()
 	objCounter = 0; 
 }
 
+Scene::~Scene()
+{
+	for (Object* obj : sceneObjects)
+		delete obj;
+
+	for (Camera* cam : sceneCameras)
+		delete cam;
+}
+
 Object* Scene::createObjectFromFile(const std::string& path)
 {
 	Object* newObject = createEmptyObject();

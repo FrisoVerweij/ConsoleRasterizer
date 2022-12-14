@@ -67,6 +67,7 @@ public:
 	std::vector<Camera*> sceneCameras;
 
 	Scene();
+	~Scene();
 	Object* createObjectFromFile(const std::string& path);
 	Object* createEmptyObject();
 	void removeObject(Object* object);
