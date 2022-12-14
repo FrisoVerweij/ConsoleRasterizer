@@ -44,9 +44,9 @@ void Object::translate(float translateX, float translateY, float translateZ)
 void Object::rotate(float rotateX, float rotateY, float rotateZ)
 {
 
-	rotateX *= std::numbers::pi / 180;
-	rotateY *= std::numbers::pi / 180;
-	rotateZ *= std::numbers::pi / 180;
+	rotateX *= (float)std::numbers::pi / 180.0f;
+	rotateY *= (float)std::numbers::pi / 180.0f;
+	rotateZ *= (float)std::numbers::pi / 180.0f;
 
 	Matrix<float> rotX = {  {1, 0,	0, 0},
 							{0, cos(rotateX), sin(rotateX), 0},
@@ -106,6 +106,19 @@ void Object::addChild(Object* newChild)
 
 void Object::removeChild(Object* child)
 {
+	// Get transformation to root of scene graph to apply to child
+	Matrix<float> parentTransformations = transform;
+	Object* parentPtr = parent;
+	while (parentPtr != nullptr)
+	{
+		parentTransformations = parentPtr->transform.matmul(parentTransformations);
+		parentPtr = parentPtr->parent;
+	}
+
+	child->transformByMatrix(parentTransformations);
+
+
+
 	child->setParent(nullptr);
 	for (std::vector<Object*>::iterator it = children.begin(); it != children.end(); ++it)
 	{
@@ -175,16 +188,25 @@ void Scene::deleteObject(Object* object)
 
 	Object* parent = object->getParent();
 	if (object->hasParent())
+	{
 		parent->removeChild(object);
+	}
+
 
 	for (Object* child : object->getChildren())
 	{
 		// Apply parent transform such that child object stays in place
-		//child->transformByMatrix(object->transform);
-		child->setParent(parent);
-		parent->addChild(child);
+		child->transformByMatrix(object->transform);
 
-		// Apply transformation
+		if (object->hasParent())
+		{
+			child->setParent(parent);
+			parent->addChild(child);
+		}
+		else
+		{
+			child->setParent(nullptr);
+		}
 	}
 
 	delete object;

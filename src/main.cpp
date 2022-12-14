@@ -5,58 +5,19 @@
 #include "scene.h"
 #include "rasterization.h"
 
-class TestClass
-{
-public:
-	int id;
-	int id2;
-	TestClass(int x)
-	{
-		id = x;
-		id2 = x + 1;
-		std::cout << "Created" << std::endl;
-	}
-
-	TestClass(const TestClass& self)
-	{
-		std::cout << "Copied" << std::endl;
-		id = self.id + 100;
-	}
-
-	~TestClass()
-	{
-		std::cout << "Destroyed" << std::endl;
-	}
-};
-
 
 int main()
 {
-	//std::vector<TestClass> v;
-	//v.reserve(5);
-
-	//v.emplace_back(1);
-	//v.emplace_back(2);
-	//v.emplace_back(3);
-	//v.emplace_back(4);
-	//v.emplace_back(5);
-	//
-	//TestClass vref = v[v.size() - 1];
-
-	//std::cout << vref.id << " " << vref.id2 << std::endl;
-
-	////for (TestClass& t : v)
-	////{
-	////	std::cout << t.id << std::endl;
-	////}
-
-
-
-	//std::cin.get();
 	Scene scene;
+
+	Object* top = scene.createEmptyObject();
+	top->name = "top";
+	top->rotate(0, 0, 45);
 
 	Object* object1 = scene.createEmptyObject();
 	object1->name = "First object";
+	object1->rotate(0, 45, 0);
+	top->addChild(object1);
 
 	Object* newObject = scene.createObjectFromFile("testing/model.obj");
 
@@ -87,40 +48,53 @@ int main()
 
 	std::cin.get();
 
-	object1->removeChild(object2);
-	scene.summary();
-	std::cin.get();
+	//object1->removeChild(object2);
+	//scene.summary();
+	//std::cin.get();
 
-	scene.removeObject(newObject);
+	//scene.removeObject(newObject);
 
-	scene.summary();
-	std::cin.get();
-
-
-	object3->addChild(object2);
-
-	scene.summary();
-	std::cin.get();
-
-	newObject = scene.createObjectFromFile("testing/model.obj");
-	newObject->name = "boss";
-
-	newObject->addChild(object1);
+	//scene.summary();
+	//std::cin.get();
 
 
-	scene.summary();
-	std::cin.get();
+	//object3->addChild(object2);
+
+	//scene.summary();
+	//std::cin.get();
+
+	//newObject = scene.createObjectFromFile("testing/model.obj");
+	//newObject->name = "boss";
+
+	//newObject->addChild(object1);
+
+
+	//scene.summary();
+	//std::cin.get();
 
 
 	Rasterizer rast;
 	rast.render(scene);
 	rast.toDisplay();
 
+
+	std::cin.get();
+
+	object1->removeChild(newObject);
+	//scene.removeObject(object1);
+
+	rast.clearBuffers();
+	rast.render(scene);
+	rast.toDisplay();
+	std::cin.get();
+
+
+
 	while (true)
 	{
 		//std::cin.get();
 		rast.clearBuffers();
-		newObject->rotate(0, 1, 0);
+		//newObject->rotate(0, 1, 0);
 		//newObject.translate(0.1f, 0, 0);
 		rast.render(scene);
 		rast.toDisplay();
