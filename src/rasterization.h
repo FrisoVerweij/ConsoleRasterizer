@@ -18,6 +18,7 @@ private:
 	std::vector<float> grayscaleBuffer();
 	float grayscale(float red, float green, float blue);
 	char getCharFromIntensity(float intensity);
+	float edgeTest(Vector<float>& lineStart, Vector<float>& lineEnd, Vector<float>& point);
 	void rasterizeTriangle(Matrix<float>& toCamera, Matrix<float> toWorld, Triangle& triangle);
 	void rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Mesh* mesh);
 	void renderObject(Matrix<float>& toCamera, Matrix<float> toWorld, Object* object);

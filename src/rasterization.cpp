@@ -6,8 +6,9 @@
 RenderBuffers::RenderBuffers(int width, int height)
 	{
 		frameBuffer = std::vector<float>(height * width * 3, 0.0f);
-		zBuffer = std::vector<float>(height * width, 100000.0f);
+		zBuffer = std::vector<float>(height * width, INFINITY);
 	}
+
 
 void Rasterizer::clearDisplay()
 {
@@ -21,6 +22,7 @@ void Rasterizer::clearDisplay()
 	SetConsoleCursorPosition(hStdout, destCoord);
 	//std::cout << "\x1B[2J\x1B[H";
 }
+
 
 std::vector<float> Rasterizer::grayscaleBuffer()
 {
@@ -36,10 +38,12 @@ std::vector<float> Rasterizer::grayscaleBuffer()
 	return output;
 }
 
+
 float Rasterizer::grayscale(float red, float green, float blue)
 {
 	return 0.299f * red + 0.587f * green + 0.114f * blue;
 }
+
 
 char Rasterizer::getCharFromIntensity(float intensity)
 {
@@ -49,9 +53,21 @@ char Rasterizer::getCharFromIntensity(float intensity)
 		return ' ';
 }
 
+
+float Rasterizer::edgeTest(Vector<float>& lineStart, Vector<float>& lineEnd, Vector<float>& point)
+{
+	return (point(0) - lineStart(0)) * (lineEnd(1) - lineStart(1)) - (point(1) - lineStart(1)) * (lineEnd(0) - point(0));
+}
+
+
 void Rasterizer::rasterizeTriangle(Matrix<float>& toCamera, Matrix<float> toWorld, Triangle& triangle)
 {
-	//std::cout << "t" << std::endl;
+	int numVertices = triangle.vertices.size();
+	std::vector<Vector<float>> projectedVertexPositions;
+	projectedVertexPositions.reserve(numVertices);
+
+	float mostLeft = INFINITY, mostRight = -INFINITY, mostTop = INFINITY, mostBottom = -INFINITY;
+
 	for (Vertex vertex : triangle.vertices)
 	{
 		Vector<float> temp = { vertex.position()(0) , vertex.position()(1) , vertex.position()(2), 1.0f };
@@ -61,15 +77,77 @@ void Rasterizer::rasterizeTriangle(Matrix<float>& toCamera, Matrix<float> toWorl
 		projected(0) /= projected(3);
 		projected(1) /= projected(3);
 		projected(2) /= projected(3);
-		// Now in image space
 
-		// Placeholder \/
-		int xPixel = (projected(0) + 1) / 2 * imageWidth;
-		int yPixel = (projected(1) + 1) / 2 * imageHeight * 0.65f;
-		buffers->frameBuffer[(yPixel * imageWidth + xPixel) * 3] = 1.0f;
-		buffers->frameBuffer[(yPixel * imageWidth + xPixel) * 3 + 1] = 1.0f;
-		buffers->frameBuffer[(yPixel * imageWidth + xPixel) * 3 + 2] = 1.0f;
+		// To raster space
+		projected(0) = (projected(0) + 1) / 2 * imageWidth;
+		projected(1) = (1 - projected(1)) / 2 * imageHeight;
+
+		projectedVertexPositions.push_back(projected);
+
+		mostLeft = projected(0) < mostLeft ? projected(0) : mostLeft;
+		mostRight = projected(0) > mostRight ? projected(0) : mostRight;
+		mostTop = projected(1) < mostTop ? projected(1) : mostTop;
+		mostBottom = projected(1) > mostBottom ? projected(1) : mostBottom;
+
+		//std::cout << projected(0) << " " << projected(1) << std::endl;
+		//int xPixel = (projected(0) + 1) / 2 * imageWidth;
+		//int yPixel = (projected(1) + 1) / 2 * imageHeight * 0.65f;
+		//buffers->frameBuffer[(yPixel * imageWidth + xPixel) * 3] = 1.0f;
+		//buffers->frameBuffer[(yPixel * imageWidth + xPixel) * 3 + 1] = 1.0f;
+		//buffers->frameBuffer[(yPixel * imageWidth + xPixel) * 3 + 2] = 1.0f;
 	}
+
+	// Go over necessary pixels
+	mostTop = max(0, min(imageHeight, mostTop));
+	mostBottom = max(0, min(imageHeight, std::ceil(mostBottom)));
+	mostLeft = max(0, min(imageWidth, mostLeft));
+	mostRight = max(0, min(imageWidth, std::ceil(mostRight)));
+
+	for (int yPixel = (int)mostTop; yPixel < (int)mostBottom; yPixel++)
+	{
+		for (int xPixel = (int)mostLeft; xPixel < (int)mostRight; xPixel++)
+		{
+			Vector<float> pixelCenter = { xPixel + 0.5f, yPixel + 0.5f, 1.0f, 1.0f };
+			std::vector<float> barycentric;
+			barycentric.reserve(numVertices);
+			bool inTriangle = true;
+
+			float barycentricDivision = edgeTest(projectedVertexPositions[0], projectedVertexPositions[1], projectedVertexPositions[2]);
+
+			for (int idx = 0; idx < numVertices; idx++)
+			{
+				int nextIdx = idx + 1 ? idx < numVertices - 1 : 0;
+				bool edgeResult = edgeTest(projectedVertexPositions[idx], projectedVertexPositions[nextIdx], pixelCenter);
+				barycentric.push_back(edgeResult / barycentricDivision);
+				inTriangle &= edgeResult;
+
+			}
+
+			if (inTriangle)
+			{
+				// Pixel is in triangle
+
+				// Calculate normals, color, etc.
+
+				float tempZ = barycentric[0] * projectedVertexPositions[0](2);
+				tempZ += barycentric[1] * projectedVertexPositions[1](2);
+				tempZ += barycentric[1] * projectedVertexPositions[2](2);
+
+				int bufferIdx = yPixel * imageWidth + xPixel;
+				if (buffers->zBuffer[bufferIdx] > tempZ)
+				{
+					buffers->frameBuffer[bufferIdx * 3] = 1.0f;
+					buffers->frameBuffer[bufferIdx * 3 + 1] = 1.0f;
+					buffers->frameBuffer[bufferIdx * 3 + 2] = 1.0f;
+					buffers->zBuffer[bufferIdx] = tempZ;
+				}
+
+			}
+		}
+	}
+
+
+
 }
 
 void Rasterizer::rasterizeMesh(Matrix<float>& toCamera, Matrix<float> toWorld, Mesh* mesh)
@@ -164,7 +242,7 @@ void Rasterizer::clearBuffers()
 		buffers->frameBuffer[idx] = 0;
 
 	for (int idx = 0; idx < buffers->zBuffer.size(); idx++)
-		buffers->zBuffer[idx] = 100000.0f;
+		buffers->zBuffer[idx] = INFINITY;
 }
 
 
